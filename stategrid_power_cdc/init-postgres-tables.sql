@@ -38,63 +38,31 @@ CREATE INDEX idx_user_region_id ON power_user(region_id);
 
 -- ==================== Sink 表（目标表）====================
 
--- DWD层：消费明细表（关联用户信息）
-DROP TABLE IF EXISTS dwd_power_consumption_detail CASCADE;
-CREATE TABLE dwd_power_consumption_detail (
-    consumption_id BIGINT PRIMARY KEY,
-    user_id BIGINT,
-    user_name VARCHAR(100),
-    consumption_amount DECIMAL(10, 2),
-    consumption_cost DECIMAL(10, 2),
-    consumption_date TIMESTAMP,
+-- ADS层：电力仪表盘数据（最终 Sink）
+DROP TABLE IF EXISTS ads_power_dashboard CASCADE;
+CREATE TABLE ads_power_dashboard (
+    dashboard_id VARCHAR(100) NOT NULL,
+    stat_date DATE NOT NULL,
     region_id INT,
     region_name VARCHAR(100),
-    usage_type VARCHAR(50),
-    etl_time TIMESTAMP
+    total_consumption DECIMAL(15, 2),
+    total_cost DECIMAL(15, 2),
+    user_count INT,
+    avg_consumption DECIMAL(10, 2),
+    peak_hour INT,
+    peak_consumption DECIMAL(10, 2),
+    top_user_id BIGINT,
+    top_user_name VARCHAR(100),
+    top_user_consumption DECIMAL(10, 2),
+    update_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (dashboard_id, stat_date, region_id)
 );
 
 -- 创建索引
-CREATE INDEX idx_dwd_consumption_date ON dwd_power_consumption_detail(consumption_date);
-CREATE INDEX idx_dwd_region_id ON dwd_power_consumption_detail(region_id);
-CREATE INDEX idx_dwd_user_id ON dwd_power_consumption_detail(user_id);
+CREATE INDEX idx_ads_stat_date ON ads_power_dashboard(stat_date);
+CREATE INDEX idx_ads_region_id ON ads_power_dashboard(region_id);
 
--- DWS层：地区日汇总表
-DROP TABLE IF EXISTS dws_region_daily_stats CASCADE;
-CREATE TABLE dws_region_daily_stats (
-    stats_id BIGSERIAL PRIMARY KEY,
-    region_id INT,
-    region_name VARCHAR(100),
-    stat_date DATE,
-    total_consumption DECIMAL(15, 2),  -- 总用电量
-    total_cost DECIMAL(15, 2),          -- 总金额
-    user_count INT,                     -- 用户数
-    avg_consumption DECIMAL(10, 2),     -- 人均用电量
-    max_consumption DECIMAL(10, 2),     -- 最大用电量
-    min_consumption DECIMAL(10, 2),     -- 最小用电量
-    update_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    UNIQUE(region_id, stat_date)
-);
-
--- DWS层：用户用电排名表
-DROP TABLE IF EXISTS dws_user_ranking CASCADE;
-CREATE TABLE dws_user_ranking (
-    ranking_id BIGSERIAL PRIMARY KEY,
-    user_id BIGINT,
-    user_name VARCHAR(100),
-    region_id INT,
-    region_name VARCHAR(100),
-    stat_date DATE,
-    total_consumption DECIMAL(10, 2),
-    total_cost DECIMAL(10, 2),
-    ranking INT,                         -- 排名
-    update_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    UNIQUE(user_id, stat_date)
-);
-
--- 创建索引
-CREATE INDEX idx_dws_ranking_date ON dws_user_ranking(stat_date);
-CREATE INDEX idx_dws_ranking_region ON dws_user_ranking(region_id);
-CREATE INDEX idx_dws_stats_date ON dws_region_daily_stats(stat_date);
+-- 注意：DWD和DWS层的数据存储在 Fluss 中，这里不再创建 PostgreSQL 表
 
 -- 配置 CDC
 -- 设置 WAL 级别（需要在 postgresql.conf 中配置）

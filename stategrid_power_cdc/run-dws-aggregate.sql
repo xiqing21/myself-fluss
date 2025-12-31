@@ -1,21 +1,14 @@
--- DWD → DWS 层实时聚合作业 SQL
--- 对 DWD 层明细数据进行聚合统计，生成 DWS 层汇总数据
+-- DWS 层聚合作业
+-- Fluss DWD -> Fluss DWS 层
 
-USE CATALOG default_catalog;
+USE CATALOG fluss_catalog;
+USE stategrid_db;
 
--- 设置作业名称
-SET 'pipeline.name' = 'StateGrid CDC: DWD to DWS Layer';
-
--- 设置并行度
+SET 'pipeline.name' = 'StateGrid CDC: DWS Layer (Aggregate)';
 SET 'parallelism.default' = '2';
 
--- 启用 Checkpoint
-SET 'execution.checkpointing.mode' = 'EXACTLY_ONCE';
-SET 'execution.checkpointing.interval' = '10s';
+-- ==================== DWS: 地区日汇总 ====================
 
--- ==================== DWD → DWS：地区日汇总 ====================
-
--- 按地区和日期聚合，统计各地区每日用电情况
 INSERT INTO dws_region_daily_stats
 SELECT
     region_id,
@@ -33,15 +26,8 @@ GROUP BY
     region_name,
     TUMBLE(consumption_date, INTERVAL '1' DAY');
 
--- 聚合说明：
--- 1. 使用 1 天的滚动窗口（TUMBLE）
--- 2. 按地区 ID 和地区名称分组
--- 3. 计算总用电量、总金额、用户数、平均值、最大值、最小值
--- 4. 实时更新到 dws_region_daily_stats 表
+-- ==================== DWS: 用户用电排名 ====================
 
--- ==================== DWD → DWS：用户用电排名 ====================
-
--- 按日期和地区计算用户用电排名
 INSERT INTO dws_user_ranking
 SELECT
     user_id,
@@ -62,10 +48,3 @@ GROUP BY
     region_id,
     region_name,
     TUMBLE(consumption_date, INTERVAL '1' DAY);
-
--- 排名说明：
--- 1. 使用 1 天的滚动窗口
--- 2. 按日期和地区分区
--- 3. 按总用电量降序排列，计算排名
--- 4. ROW_NUMBER() 函数生成排名
--- 5. 同一天同一地区内的用户进行排名
