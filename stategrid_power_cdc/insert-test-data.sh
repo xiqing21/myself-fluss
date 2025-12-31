@@ -5,18 +5,12 @@ echo "=========================================="
 echo "插入测试数据"
 echo "=========================================="
 
-# 检查容器是否运行
-if ! docker ps | grep -q postgres; then
-    echo "错误：PostgreSQL 容器未运行"
-    exit 1
-fi
-
 # 获取脚本所在目录
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 # 执行 SQL 脚本
 echo "插入测试数据到源表..."
-docker exec -i postgres psql -U postgres -d stategrid_db < "$SCRIPT_DIR/insert-test-data.sql"
+psql -h localhost -U postgres -d stategrid_db < "$SCRIPT_DIR/insert-test-data.sql"
 
 if [ $? -eq 0 ]; then
     echo "=========================================="
@@ -31,19 +25,12 @@ if [ $? -eq 0 ]; then
     echo "=========================================="
     echo ""
     echo "查看结果："
-    echo "  docker exec -it postgres psql -U postgres -d stategrid_db"
+    echo "  ./query-results.sh"
     echo ""
-    echo "查询示例："
-    echo "  -- 查看 DWD 层数据"
-    echo "  SELECT * FROM dwd_power_consumption_detail ORDER BY consumption_date;"
-    echo ""
-    echo "  -- 查看地区汇总"
-    echo "  SELECT * FROM dws_region_daily_stats ORDER BY stat_date, region_id;"
-    echo ""
-    echo "  -- 查看用户排名"
-    echo "  SELECT * FROM dws_user_ranking ORDER BY stat_date, total_consumption DESC;"
+    echo "或直接连接 PostgreSQL："
+    echo "  psql -h localhost -U postgres -d stategrid_db"
     echo "=========================================="
 else
-    echo "错误：数据插入失败"
+    echo "错误：数据插入失败，请检查数据库连接"
     exit 1
 fi

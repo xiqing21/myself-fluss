@@ -1,12 +1,11 @@
 -- Flink 表定义脚本
--- 创建 CDC 源表、中间表和 Sink 表
+-- 创建 CDC 源表、DWD 层和 DWS 层表
 
--- 创建 Catalog（可选，如果有其他存储后端）
--- CREATE CATALOG my_catalog WITH ('type' = 'generic_in_memory');
--- USE CATALOG my_catalog;
+-- 使用默认 catalog
+USE CATALOG default_catalog;
 
 -- 设置默认并行度
-SET 'parallelism.default' = '4';
+SET 'parallelism.default' = '2';
 
 -- ==================== ODS 层表（CDC 源表）====================
 
@@ -24,7 +23,7 @@ CREATE TABLE ods_power_user (
     PRIMARY KEY (user_id) NOT ENFORCED
 ) WITH (
     'connector' = 'postgres-cdc',
-    'hostname' = 'postgres',
+    'hostname' = 'localhost',
     'port' = '5432',
     'username' = 'postgres',
     'password' = 'postgres',
@@ -50,7 +49,7 @@ CREATE TABLE ods_power_consumption (
     PRIMARY KEY (consumption_id) NOT ENFORCED
 ) WITH (
     'connector' = 'postgres-cdc',
-    'hostname' = 'postgres',
+    'hostname' = 'localhost',
     'port' = '5432',
     'username' = 'postgres',
     'password' = 'postgres',
@@ -80,7 +79,7 @@ CREATE TABLE dwd_power_consumption_detail (
     PRIMARY KEY (consumption_id) NOT ENFORCED
 ) WITH (
     'connector' = 'jdbc',
-    'url' = 'jdbc:postgresql://postgres:5432/stategrid_db',
+    'url' = 'jdbc:postgresql://localhost:5432/stategrid_db',
     'table-name' = 'dwd_power_consumption_detail',
     'username' = 'postgres',
     'password' = 'postgres',
@@ -107,7 +106,7 @@ CREATE TABLE dws_region_daily_stats (
     PRIMARY KEY (region_id, stat_date) NOT ENFORCED
 ) WITH (
     'connector' = 'jdbc',
-    'url' = 'jdbc:postgresql://postgres:5432/stategrid_db',
+    'url' = 'jdbc:postgresql://localhost:5432/stategrid_db',
     'table-name' = 'dws_region_daily_stats',
     'username' = 'postgres',
     'password' = 'postgres',
@@ -131,7 +130,7 @@ CREATE TABLE dws_user_ranking (
     PRIMARY KEY (user_id, stat_date) NOT ENFORCED
 ) WITH (
     'connector' = 'jdbc',
-    'url' = 'jdbc:postgresql://postgres:5432/stategrid_db',
+    'url' = 'jdbc:postgresql://localhost:5432/stategrid_db',
     'table-name' = 'dws_user_ranking',
     'username' = 'postgres',
     'password' = 'postgres',
@@ -150,4 +149,4 @@ SET 'execution.checkpointing.interval' = '10s';
 SET 'execution.checkpointing.timeout' = '5min';
 SET 'execution.checkpointing.unaligned' = 'true';
 SET 'state.backend' = 'rocksdb';
-SET 'state.checkpoints.dir' = 'file:///opt/flink/checkpoints';
+SET 'state.checkpoints.dir' = 'file:///tmp/flink-checkpoints';
