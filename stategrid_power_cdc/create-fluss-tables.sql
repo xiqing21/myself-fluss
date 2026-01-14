@@ -64,6 +64,7 @@ CREATE TABLE IF NOT EXISTS dwd_power_consumption_detail (
     consumption_amount DECIMAL(10, 2),
     consumption_cost DECIMAL(10, 2),
     consumption_date TIMESTAMP(3),
+    WATERMARK FOR consumption_date AS consumption_date - INTERVAL '5' SECOND,
     region_id INT,
     region_name STRING,
     usage_type STRING,

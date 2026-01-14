@@ -16,8 +16,6 @@ USE stategrid_db;
 
 -- ==================== DWS: 地区日汇总 ====================
 
-EXECUTE STATEMENT SET
-BEGIN
 INSERT INTO dws_region_daily_stats
 SELECT
     region_id,
@@ -39,22 +37,61 @@ GROUP BY
 
 INSERT INTO dws_user_ranking
 SELECT
-    user_id,
-    user_name,
-    region_id,
-    region_name,
-    CAST(TUMBLE_START(consumption_date, INTERVAL '1' DAY) AS DATE) AS stat_date,
-    SUM(consumption_amount) AS total_consumption,
-    SUM(consumption_cost) AS total_cost,
-    ROW_NUMBER() OVER (
-        PARTITION BY TUMBLE(consumption_date, INTERVAL '1' DAY), region_id
-        ORDER BY SUM(consumption_amount) DESC
-    ) AS ranking
-FROM dwd_power_consumption_detail
-GROUP BY
-    user_id,
-    user_name,
-    region_id,
-    region_name,
-    TUMBLE(consumption_date, INTERVAL '1' DAY);
-END;
+    t1.user_id,
+    t1.user_name,
+    t1.region_id,
+    t1.region_name,
+    t1.stat_date,
+    t1.total_consumption,
+    t1.total_cost,
+    t2.total_count - t1.row_num_asc + 1 AS ranking
+FROM (
+    SELECT
+        user_id,
+        user_name,
+        region_id,
+        region_name,
+        stat_date,
+        total_consumption,
+        total_cost,
+        ROW_NUMBER() OVER (
+            PARTITION BY stat_date, region_id
+            ORDER BY total_consumption ASC
+        ) AS row_num_asc
+    FROM (
+        SELECT
+            user_id,
+            user_name,
+            region_id,
+            region_name,
+            CAST(TUMBLE_START(consumption_date, INTERVAL '1' DAY) AS DATE) AS stat_date,
+            SUM(consumption_amount) AS total_consumption,
+            SUM(consumption_cost) AS total_cost
+        FROM dwd_power_consumption_detail
+        GROUP BY
+            user_id,
+            user_name,
+            region_id,
+            region_name,
+            TUMBLE(consumption_date, INTERVAL '1' DAY)
+    )
+) t1
+LEFT JOIN (
+    SELECT
+        stat_date,
+        region_id,
+        COUNT(*) AS total_count
+    FROM (
+        SELECT
+            CAST(TUMBLE_START(consumption_date, INTERVAL '1' DAY) AS DATE) AS stat_date,
+            region_id,
+            user_id
+        FROM dwd_power_consumption_detail
+        GROUP BY
+            user_id,
+            region_id,
+            TUMBLE(consumption_date, INTERVAL '1' DAY)
+    )
+    GROUP BY stat_date, region_id
+) t2
+ON t1.stat_date = t2.stat_date AND t1.region_id = t2.region_id;
