@@ -1,5 +1,6 @@
 -- Fluss 分层表定义
 -- ODS -> DWD -> DWS -> ADS
+-- 注意：使用 DataGen 源，非 PostgreSQL CDC
 
 -- 创建 Fluss Catalog
 CREATE CATALOG fluss_catalog
@@ -17,7 +18,8 @@ USE stategrid_db;
 
 -- ==================== ODS 层（原始数据层）====================
 
--- ODS：用户信息 CDC 表
+-- ODS：用户信息 CDC 表（DataGen 源，非 PostgreSQL CDC）
+DROP TABLE IF EXISTS ods_power_user;
 CREATE TABLE IF NOT EXISTS ods_power_user (
     user_id BIGINT,
     user_name STRING,
@@ -34,7 +36,8 @@ CREATE TABLE IF NOT EXISTS ods_power_user (
     'table.delete.behavior' = 'IGNORE'
 );
 
--- ODS：消费记录 CDC 表
+-- ODS：消费记录 CDC 表（DataGen 源，非 PostgreSQL CDC）
+DROP TABLE IF EXISTS ods_power_consumption;
 CREATE TABLE IF NOT EXISTS ods_power_consumption (
     consumption_id BIGINT,
     user_id BIGINT,
@@ -53,6 +56,7 @@ CREATE TABLE IF NOT EXISTS ods_power_consumption (
 -- ==================== DWD 层（明细数据层）====================
 
 -- DWD：消费明细表（关联用户维度）
+DROP TABLE IF EXISTS dwd_power_consumption_detail;
 CREATE TABLE IF NOT EXISTS dwd_power_consumption_detail (
     consumption_id BIGINT,
     user_id BIGINT,
@@ -73,14 +77,15 @@ CREATE TABLE IF NOT EXISTS dwd_power_consumption_detail (
 -- ==================== DWS 层（汇总数据层）====================
 
 -- DWS：地区日汇总表
+DROP TABLE IF EXISTS dws_region_daily_stats;
 CREATE TABLE IF NOT EXISTS dws_region_daily_stats (
     region_id INT,
     region_name STRING,
-    stat_date DATE,
-    total_consumption DECIMAL(15, 2),
-    total_cost DECIMAL(15, 2),
-    user_count INT,
-    avg_consumption DECIMAL(10, 2),
+    stat_date DATE NOT NULL,
+    total_consumption DECIMAL(38, 2),
+    total_cost DECIMAL(38, 2),
+    user_count BIGINT,
+    avg_consumption DECIMAL(35, 2),
     max_consumption DECIMAL(10, 2),
     min_consumption DECIMAL(10, 2),
     PRIMARY KEY (region_id, stat_date) NOT ENFORCED
@@ -90,15 +95,16 @@ CREATE TABLE IF NOT EXISTS dws_region_daily_stats (
 );
 
 -- DWS：用户用电排名表
+DROP TABLE IF EXISTS dws_user_ranking;
 CREATE TABLE IF NOT EXISTS dws_user_ranking (
     user_id BIGINT,
     user_name STRING,
     region_id INT,
     region_name STRING,
-    stat_date DATE,
-    total_consumption DECIMAL(10, 2),
-    total_cost DECIMAL(10, 2),
-    ranking INT,
+    stat_date DATE NOT NULL,
+    total_consumption DECIMAL(38, 2),
+    total_cost DECIMAL(38, 2),
+    ranking BIGINT,
     PRIMARY KEY (user_id, stat_date) NOT ENFORCED
 ) WITH (
     'bucket.key' = 'user_id',
@@ -108,15 +114,16 @@ CREATE TABLE IF NOT EXISTS dws_user_ranking (
 -- ==================== ADS 层（应用数据层）====================
 
 -- ADS：电力仪表盘数据
+DROP TABLE IF EXISTS ads_power_dashboard;
 CREATE TABLE IF NOT EXISTS ads_power_dashboard (
     dashboard_id STRING,
-    stat_date DATE,
+    stat_date DATE NOT NULL,
     region_id INT,
     region_name STRING,
-    total_consumption DECIMAL(15, 2),
-    total_cost DECIMAL(15, 2),
-    user_count INT,
-    avg_consumption DECIMAL(10, 2),
+    total_consumption DECIMAL(38, 2),
+    total_cost DECIMAL(38, 2),
+    user_count BIGINT,
+    avg_consumption DECIMAL(35, 2),
     peak_hour INT,
     peak_consumption DECIMAL(10, 2),
     top_user_id BIGINT,
@@ -135,13 +142,13 @@ CREATE TABLE IF NOT EXISTS ads_power_dashboard (
 -- ADS Sink：电力仪表盘（写入 PostgreSQL）
 CREATE TEMPORARY TABLE IF NOT EXISTS ads_power_dashboard_sink (
     dashboard_id STRING,
-    stat_date DATE,
+    stat_date DATE NOT NULL,
     region_id INT,
     region_name STRING,
-    total_consumption DECIMAL(15, 2),
-    total_cost DECIMAL(15, 2),
-    user_count INT,
-    avg_consumption DECIMAL(10, 2),
+    total_consumption DECIMAL(38, 2),
+    total_cost DECIMAL(38, 2),
+    user_count BIGINT,
+    avg_consumption DECIMAL(35, 2),
     peak_hour INT,
     peak_consumption DECIMAL(10, 2),
     top_user_id BIGINT,

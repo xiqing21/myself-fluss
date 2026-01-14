@@ -1,5 +1,6 @@
 #!/bin/bash
 # 创建 Fluss 分层表
+# 注意：此脚本会 DROP 已存在的表，确保重建使用最新的表结构
 
 echo "=========================================="
 echo "创建 Fluss 分层表 (ODS -> DWD -> DWS -> ADS)"
@@ -15,7 +16,7 @@ if [ $? -eq 0 ]; then
     echo "=========================================="
     echo "Fluss 分层表创建成功！"
     echo "=========================================="
-    echo "ODS 层："
+    echo "ODS 层（DataGen 源）："
     echo "  - ods_power_user"
     echo "  - ods_power_consumption"
     echo ""
@@ -28,6 +29,12 @@ if [ $? -eq 0 ]; then
     echo ""
     echo "ADS 层："
     echo "  - ads_power_dashboard"
+    echo "  - ads_power_dashboard_sink (TEMPORARY, 写入 PostgreSQL)"
+    echo ""
+    echo "说明："
+    echo "  - 本项目使用 DataGen 作为数据源，不依赖 PostgreSQL CDC"
+    echo "  - 如需 PostgreSQL Sink，需要先运行 init-postgres-tables.sql"
+    echo "  - 脚本已包含 DROP TABLE，确保使用最新表结构"
     echo "=========================================="
     echo ""
     echo "下一步：./run-all-jobs.sh"

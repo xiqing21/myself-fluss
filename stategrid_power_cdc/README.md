@@ -231,7 +231,36 @@ SELECT * FROM ads_power_dashboard ORDER BY stat_date, region_id;
 
 ## 常见问题
 
-### Q1: CDC 不同步数据
+### Q1: 执行 SQL 后没有对应的 Flink 作业
+
+**问题现象：**
+- SQL 文件执行成功，没有报错
+- 但 Flink Web UI 中找不到对应的作业
+- 或只看到部分作业
+
+**可能原因：多个 INSERT 语句未使用 EXECUTE STATEMENT SET 包裹**
+
+**解决方案：**
+
+检查 SQL 文件中是否有多个 `INSERT` 语句。如果有，必须用 `EXECUTE STATEMENT SET BEGIN ... END` 包裹：
+
+```sql
+-- ✅ 正确写法
+EXECUTE STATEMENT SET
+BEGIN
+    INSERT INTO table1 SELECT ...;
+    INSERT INTO table2 SELECT ...;
+END;
+```
+
+**说明：**
+- Flink SQL Client 默认只执行第一条语句
+- `EXECUTE STATEMENT SET` 将多个 INSERT 合并成一个作业
+- 详细说明请查看 `注意点.md` 第 1 节
+
+---
+
+### Q2: CDC 不同步数据
 - 检查 PostgreSQL WAL 配置：`wal_level = logical`
 - 检查 replication slots
 - 验证数据库连接信息
@@ -240,12 +269,12 @@ SELECT * FROM ads_power_dashboard ORDER BY stat_date, region_id;
 - 检查 Fluss 服务状态
 - 确认 Fluss 连接器版本兼容
 
-### Q3: 性能不达标
+### Q3: Fluss 表写入失败
 - 增加 Flink 并行度
 - 优化 Fluss bucket key
 - 调整批量写入参数
 
-### Q4: SQL Client 执行成功但作业失败
+### Q5: SQL Client 执行成功但作业失败
 
 **重要说明：**
 
