@@ -26,3 +26,12 @@ Fluss 引入基于Partial Update（部分更新）机制的数据打宽方法，
 
 ![alt text](image.png)
 其底层机制是：当某条部分更新到达时，Fluss 会查找该主键已有的记录，并仅更新本次提供的字段，其余字段保持不变。合并后的新版本实时落盘，确保每条记录始终是最新的完整状态，其底层机制类似于数据库中的“增量更新”，每次只更新有变化的字段，而非整条记录。这种方式大幅降低了 Flink 作业的状态压力和计算复杂度，使数据管道更轻量、高效、易维护。
+
+注意，创建catalog 时不能使用-，且每次进来都要创建一遍CREATE CATALOG fluss_demo
+WITH (
+    'type' = 'fluss'
+    ,'bootstrap.servers' = 'localhost:9123'
+)
+;
+
+USE CATALOG fluss_demo;
