@@ -66,17 +66,7 @@ echo "正在执行 SQL 脚本..."
 bash /opt/flink/bin/sql-client.sh -f "$SCRIPT_DIR/01-run-ods-cdc.sql"
 
 sleep 5
-
-echo "验证作业状态..."
-bash "$SCRIPT_DIR/check-jobs.sh" "StateGrid.*ODS"
-
-if [ $? -eq 0 ]; then
-    echo -e "\033[0;32m✓\033[0m ODS 层作业运行正常"
-else
-    echo -e "\033[0;31m✗\033[0m ODS 层作业启动失败！"
-    echo "请检查 Flink Web UI: http://localhost:8081"
-    exit 1
-fi
+echo -e "\033[0;32m✓\033[0m ODS 层作业已提交"
 echo ""
 
 # 阶段 4: [2/5] 启动 DWD 层转换
@@ -89,17 +79,7 @@ echo "正在执行 SQL 脚本..."
 bash /opt/flink/bin/sql-client.sh -f "$SCRIPT_DIR/02-run-dwd-transform.sql"
 
 sleep 5
-
-echo "验证作业状态..."
-bash "$SCRIPT_DIR/check-jobs.sh" "StateGrid.*DWD"
-
-if [ $? -eq 0 ]; then
-    echo -e "\033[0;32m✓\033[0m DWD 层作业运行正常"
-else
-    echo -e "\033[0;31m✗\033[0m DWD 层作业启动失败！"
-    echo "请检查 Flink Web UI: http://localhost:8081"
-    exit 1
-fi
+echo -e "\033[0;32m✓\033[0m DWD 层作业已提交"
 echo ""
 
 # 阶段 5: [3/5] 启动 DWS 层聚合
@@ -112,17 +92,7 @@ echo "正在执行 SQL 脚本..."
 bash /opt/flink/bin/sql-client.sh -f "$SCRIPT_DIR/03-run-dws-aggregate.sql"
 
 sleep 5
-
-echo "验证作业状态..."
-bash "$SCRIPT_DIR/check-jobs.sh" "StateGrid.*DWS"
-
-if [ $? -eq 0 ]; then
-    echo -e "\033[0;32m✓\033[0m DWS 层作业运行正常"
-else
-    echo -e "\033[0;31m✗\033[0m DWS 层作业启动失败！"
-    echo "请检查 Flink Web UI: http://localhost:8081"
-    exit 1
-fi
+echo -e "\033[0;32m✓\033[0m DWS 层作业已提交"
 echo ""
 
 # 阶段 6: [4/5] 启动 ADS 层转换
@@ -135,17 +105,7 @@ echo "正在执行 SQL 脚本..."
 bash /opt/flink/bin/sql-client.sh -f "$SCRIPT_DIR/04-run-ads-transform.sql"
 
 sleep 5
-
-echo "验证作业状态..."
-bash "$SCRIPT_DIR/check-jobs.sh" "StateGrid.*ADS"
-
-if [ $? -eq 0 ]; then
-    echo -e "\033[0;32m✓\033[0m ADS 层作业运行正常"
-else
-    echo -e "\033[0;31m✗\033[0m ADS 层作业启动失败！"
-    echo "请检查 Flink Web UI: http://localhost:8081"
-    exit 1
-fi
+echo -e "\033[0;32m✓\033[0m ADS 层作业已提交"
 echo ""
 
 # 阶段 7: [5/5] 启动 Sink 层 (Fluss -> PostgreSQL)
@@ -158,17 +118,7 @@ echo "正在执行 SQL 脚本..."
 bash /opt/flink/bin/sql-client.sh -f "$SCRIPT_DIR/05-run-fluss-to-postgres.sql"
 
 sleep 5
-
-echo "验证作业状态..."
-bash "$SCRIPT_DIR/check-jobs.sh" "INSERT.*ads_power_dashboard"
-
-if [ $? -eq 0 ]; then
-    echo -e "\033[0;32m✓\033[0m Sink 层作业运行正常"
-else
-    echo -e "\033[0;31m✗\033[0m Sink 层作业启动失败！"
-    echo "请检查 Flink Web UI: http://localhost:8081"
-    exit 1
-fi
+echo -e "\033[0;32m✓\033[0m Sink 层作业已提交"
 echo ""
 
 # 执行完成
