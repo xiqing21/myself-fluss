@@ -1,5 +1,5 @@
--- Fluss ADS -> PostgreSQL Sink 作业
--- 将 ADS 层数据写入 PostgreSQL Sink
+-- Fluss ADS -> Print Sink 作业
+-- 将 ADS 层数据输出到控制台（由于 Flink 2.2.0 不支持 JDBC Sink）
 CREATE CATALOG fluss_catalog
 WITH (
     'type' = 'fluss',
@@ -8,8 +8,8 @@ WITH (
 USE CATALOG default_catalog;
 USE default_database;
 
--- 创建持久表（在 create-fluss-tables.sql 中执行）
-CREATE TABLE IF NOT EXISTS ads_power_dashboard_sink (
+-- 创建 Print Sink 表
+CREATE TABLE IF NOT EXISTS ads_power_dashboard_print (
     dashboard_id STRING,
     stat_date DATE,
     region_id INT,
@@ -26,19 +26,10 @@ CREATE TABLE IF NOT EXISTS ads_power_dashboard_sink (
     update_time TIMESTAMP(3),
     PRIMARY KEY (dashboard_id, stat_date, region_id) NOT ENFORCED
 ) WITH (
-    'connector' = 'jdbc',
-    'url' = 'jdbc:postgresql://localhost:5432/stategrid_db',
-    'table-name' = 'ads_power_dashboard',
-    'username' = 'postgres',
-    'password' = 'postgres',
-    'driver' = 'org.postgresql.Driver',
-    'sink.buffer-flush.max-size' = '10mb',
-    'sink.buffer-flush.max-rows' = '1000',
-    'sink.buffer-flush.interval' = '5s',
-    'sink.max-retries' = '3'
+    'connector' = 'print'
 );
 
--- 从 Fluss ADS 表读取并写入 PostgreSQL
-INSERT INTO ads_power_dashboard_sink
+-- 从 Fluss ADS 表读取并输出到控制台
+INSERT INTO ads_power_dashboard_print
 SELECT * FROM fluss_catalog.stategrid_db.ads_power_dashboard;
 
