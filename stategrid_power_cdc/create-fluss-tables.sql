@@ -129,10 +129,11 @@ CREATE TABLE IF NOT EXISTS ads_power_dashboard (
     'table.delete.behavior' = 'IGNORE'
 );
 
--- ==================== PostgreSQL Sink 表（外部表）====================
+-- ==================== PostgreSQL Sink 表（临时表）====================
+-- 注意：Fluss Catalog 不支持非 Fluss 类型的持久表，因此使用 TEMPORARY 表
 
 -- ADS Sink：电力仪表盘（写入 PostgreSQL）
-CREATE TABLE IF NOT EXISTS ads_power_dashboard_sink (
+CREATE TEMPORARY TABLE IF NOT EXISTS ads_power_dashboard_sink (
     dashboard_id STRING,
     stat_date DATE,
     region_id INT,
