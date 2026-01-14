@@ -24,9 +24,12 @@ check_flink_api() {
     return 1
 }
 
-# 获取所有作业及其状态
+# 获取所有作业及其状态（不依赖 jq）
 get_jobs_status() {
-    curl -s "$FLINK_REST_API/jobs" | jq -r '.jobs[] | "\(.id)|\(.name)|\(.status)"'
+    local json=$(curl -s "$FLINK_REST_API/jobs")
+    # 使用 grep/sed 解析 JSON
+    echo "$json" | grep -o '"id":"[^"]*","name":"[^"]*","state":"[^"]*"' | \
+        sed 's/"id":"//;s/","name":"/|/;s/","state":"/|/;s/"$//'
 }
 
 # 获取作业详情
@@ -105,10 +108,10 @@ main() {
 
                     # 获取异常信息
                     EXCEPTIONS=$(get_job_exceptions "$job_id")
-                    if [ -n "$EXCEPTIONS" ] && [ "$EXCEPTIONS" != "null" ]; then
+                    if [ -n "$EXCEPTIONS" ] && [ "$EXCEPTIONS" != "null" ] && [ "$EXCEPTIONS" != "{}" ]; then
                         echo ""
                         echo "异常信息:"
-                        echo "$EXCEPTIONS" | jq -r '.[]? | "  \(.exception)"' 2>/dev/null || echo "  无法解析异常信息"
+                        echo "$EXCEPTIONS" | grep -o '"exception":"[^"]*"' | sed 's/"exception":"//;s/"$//' | sed 's/^/  /'
                     fi
                     ;;
                 *)

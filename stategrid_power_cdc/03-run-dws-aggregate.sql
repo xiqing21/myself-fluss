@@ -1,18 +1,23 @@
 -- DWS 层聚合作业
 -- Fluss DWD -> Fluss DWS 层
+
+SET 'pipeline.name' = 'StateGrid CDC: DWS Layer (Aggregate)';
+SET 'parallelism.default' = '2';
+
+-- 创建目录并使用
 CREATE CATALOG fluss_catalog
 WITH (
     'type' = 'fluss',
     'bootstrap.servers' = 'localhost:9123'
 );
+
 USE CATALOG fluss_catalog;
 USE stategrid_db;
 
-SET 'pipeline.name' = 'StateGrid CDC: DWS Layer (Aggregate)';
-SET 'parallelism.default' = '2';
-
 -- ==================== DWS: 地区日汇总 ====================
 
+EXECUTE STATEMENT SET
+BEGIN
 INSERT INTO dws_region_daily_stats
 SELECT
     region_id,
@@ -28,7 +33,7 @@ FROM dwd_power_consumption_detail
 GROUP BY
     region_id,
     region_name,
-    TUMBLE(consumption_date, INTERVAL '1' DAY');
+    TUMBLE(consumption_date, INTERVAL '1' DAY);
 
 -- ==================== DWS: 用户用电排名 ====================
 
@@ -52,3 +57,4 @@ GROUP BY
     region_id,
     region_name,
     TUMBLE(consumption_date, INTERVAL '1' DAY);
+END;

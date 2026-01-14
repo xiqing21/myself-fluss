@@ -25,10 +25,10 @@ CREATE TABLE IF NOT EXISTS power_user_source (
     PRIMARY KEY (user_id) NOT ENFORCED
 ) WITH (
     'connector' = 'datagen',
-    'rows-per-second' = '10',
+    'rows-per-second' = '1',
     'fields.user_id.kind' = 'sequence',
     'fields.user_id.start' = '1',
-    'fields.user_id.end' = '10000',
+    'fields.user_id.end' = '1000',
     'fields.user_name.kind' = 'random',
     'fields.user_name.length' = '10',
     'fields.usage_type.kind' = 'random',
@@ -65,13 +65,13 @@ CREATE TABLE IF NOT EXISTS power_consumption_source (
     PRIMARY KEY (consumption_id) NOT ENFORCED
 ) WITH (
     'connector' = 'datagen',
-    'rows-per-second' = '20',
+    'rows-per-second' = '2',
     'fields.consumption_id.kind' = 'sequence',
     'fields.consumption_id.start' = '1',
-    'fields.consumption_id.end' = '100000',
+    'fields.consumption_id.end' = '10000',
     'fields.user_id.kind' = 'random',
     'fields.user_id.min' = '1',
-    'fields.user_id.max' = '10000',
+    'fields.user_id.max' = '1000',
     'fields.consumption_amount.kind' = 'random',
     'fields.consumption_amount.min' = '10',
     'fields.consumption_amount.max' = '500',
