@@ -9,7 +9,7 @@ echo "=========================================="
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 # 执行 SQL
-bash /opt/flink/bin/sql-client.sh -f "$SCRIPT_DIR/create-flink-tables.sql"
+bash /opt/flink/bin/sql-client.sh -f "$SCRIPT_DIR/create-fluss-tables.sql"
 
 if [ $? -eq 0 ]; then
     echo "=========================================="

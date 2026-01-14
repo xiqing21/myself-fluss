@@ -46,7 +46,7 @@ CREATE TABLE IF NOT EXISTS ods_power_consumption (
     remark STRING,
     PRIMARY KEY (consumption_id) NOT ENFORCED
 ) WITH (
-    'bucket.key' = 'user_id',
+    'bucket.key' = 'consumption_id',  -- 修改：使用主键字段作为分桶键
     'table.delete.behavior' = 'IGNORE'
 );
 
@@ -66,7 +66,7 @@ CREATE TABLE IF NOT EXISTS dwd_power_consumption_detail (
     etl_time TIMESTAMP(3),
     PRIMARY KEY (consumption_id) NOT ENFORCED
 ) WITH (
-    'bucket.key' = 'user_id',
+    'bucket.key' = 'consumption_id',  -- 修改：使用主键字段作为分桶键
     'table.delete.behavior' = 'IGNORE'
 );
 
@@ -125,7 +125,7 @@ CREATE TABLE IF NOT EXISTS ads_power_dashboard (
     update_time TIMESTAMP(3),
     PRIMARY KEY (dashboard_id, stat_date, region_id) NOT ENFORCED
 ) WITH (
-    'bucket.key' = 'region_id',
+    'bucket.key' = 'dashboard_id',  -- 修改：使用主键第一字段作为分桶键
     'table.delete.behavior' = 'IGNORE'
 );
 
