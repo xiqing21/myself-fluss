@@ -1,6 +1,10 @@
 -- DWD 层转换作业
 -- Fluss ODS -> Fluss DWD 层
-
+CREATE CATALOG fluss_catalog
+WITH (
+    'type' = 'fluss',
+    'bootstrap.servers' = 'localhost:9123'
+);
 USE CATALOG fluss_catalog;
 USE stategrid_db;
 

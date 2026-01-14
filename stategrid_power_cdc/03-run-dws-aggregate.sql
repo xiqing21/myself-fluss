@@ -1,6 +1,10 @@
 -- DWS 层聚合作业
 -- Fluss DWD -> Fluss DWS 层
-
+CREATE CATALOG fluss_catalog
+WITH (
+    'type' = 'fluss',
+    'bootstrap.servers' = 'localhost:9123'
+);
 USE CATALOG fluss_catalog;
 USE stategrid_db;
 

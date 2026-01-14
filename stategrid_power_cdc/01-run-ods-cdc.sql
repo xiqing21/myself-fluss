@@ -1,6 +1,10 @@
 -- ODS 层 CDC 同步作业
 -- PostgreSQL CDC -> Fluss ODS 层
-
+CREATE CATALOG fluss_catalog
+WITH (
+    'type' = 'fluss',
+    'bootstrap.servers' = 'localhost:9123'
+);
 USE CATALOG default_catalog;
 
 SET 'pipeline.name' = 'StateGrid CDC: ODS Layer (PostgreSQL -> Fluss)';

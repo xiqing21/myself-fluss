@@ -1,24 +1,10 @@
 -- Fluss ADS -> PostgreSQL Sink 作业
 -- 将 ADS 层数据写入 PostgreSQL Sink
-
--- 注意：PostgreSQL Sink 表在 create-fluss-tables.sql 中已创建为 TEMPORARY 表
--- 如果需要持久化表，可以使用以下方案切换到默认 Catalog：
-
-/*
--- 方案1：在 Fluss Catalog 中使用 TEMPORARY 表（当前方案）
-USE CATALOG fluss_catalog;
-USE stategrid_db;
-
-SET 'pipeline.name' = 'StateGrid CDC: Sink Layer (Fluss -> PostgreSQL)';
-SET 'parallelism.default' = '2';
-
--- ==================== Sink: 写入 PostgreSQL ====================
-
-INSERT INTO ads_power_dashboard_sink
-SELECT * FROM ads_power_dashboard;
-*/
-
--- 方案2：切换到默认 Catalog 创建持久表（如需要）
+CREATE CATALOG fluss_catalog
+WITH (
+    'type' = 'fluss',
+    'bootstrap.servers' = 'localhost:9123'
+);
 USE CATALOG default_catalog;
 USE default_database;
 

@@ -69,8 +69,29 @@ cd /opt/data/stategrid_power_cdc
 
 ### 4. 启动数据处理作业
 
+#### 方式一：一键启动所有作业（推荐）
+
 ```bash
 ./run-all-jobs.sh
+```
+
+#### 方式二：分层启动（逐步调试）
+
+```bash
+# [1/5] 启动 ODS 层 CDC 同步
+./01-run-ods-cdc.sh
+
+# [2/5] 启动 DWD 层转换
+./02-run-dwd-transform.sh
+
+# [3/5] 启动 DWS 层聚合
+./03-run-dws-aggregate.sh
+
+# [4/5] 启动 ADS 层转换
+./04-run-ads-transform.sh
+
+# [5/5] 启动 Sink 层写入
+./05-run-fluss-to-postgres.sh
 ```
 
 这将启动：
@@ -100,21 +121,26 @@ python test_crud.py
 
 ### SQL 文件
 
+- `01-run-ods-cdc.sql` - ODS 层 CDC 同步（PostgreSQL → Fluss）
+- `02-run-dwd-transform.sql` - DWD 层转换（ODS → DWD）
+- `03-run-dws-aggregate.sql` - DWS 层聚合（DWD → DWS）
+- `04-run-ads-transform.sql` - ADS 层转换（DWS → ADS）
+- `05-run-fluss-to-postgres.sql` - Sink 层（Fluss → PostgreSQL）
 - `init-postgres-tables.sql` - PostgreSQL 源表和 Sink 表初始化
 - `configure-postgres-cdc.sql` - PostgreSQL CDC 配置
 - `create-fluss-tables.sql` - Fluss 分层表定义（ODS/DWD/DWS/ADS）
-- `run-ods-cdc.sql` - ODS 层 CDC 同步
-- `run-dwd-transform.sql` - DWD 层转换
-- `run-dws-aggregate.sql` - DWS 层聚合
-- `run-ads-transform.sql` - ADS 层转换
-- `run-fluss-to-postgres.sql` - Fluss → PostgreSQL Sink
 
 ### Shell 脚本
 
+- `check-jobs.sh` - 验证 Flink 作业状态（通过 REST API）
+- `01-run-ods-cdc.sh` - 启动 ODS 层 CDC 同步作业
+- `02-run-dwd-transform.sh` - 启动 DWD 层转换作业
+- `03-run-dws-aggregate.sh` - 启动 DWS 层聚合作业
+- `04-run-ads-transform.sh` - 启动 ADS 层转换作业
+- `05-run-fluss-to-postgres.sh` - 启动 Sink 层作业
+- `run-all-jobs.sh` - 一键启动所有作业
 - `init-postgres-and-cdc.sh` - 初始化 PostgreSQL 和 CDC
 - `create-fluss-tables.sh` - 创建 Fluss 分层表
-- `run-all-jobs.sh` - 一键启动所有作业
-- `insert-test-data.py` - Python 批量插入测试数据
 
 ### Python 脚本
 
@@ -218,6 +244,51 @@ SELECT * FROM ads_power_dashboard ORDER BY stat_date, region_id;
 - 增加 Flink 并行度
 - 优化 Fluss bucket key
 - 调整批量写入参数
+
+### Q4: SQL Client 执行成功但作业失败
+
+**重要说明：**
+
+1. **SQL Client 退出码不可靠**
+   - `bash /opt/flink/bin/sql-client.sh -f xxx.sql` 的退出码 `$?` 不能准确反映作业是否成功
+   - 即使作业启动失败，SQL Client 可能仍返回退出码 0
+
+2. **正确验证方式**
+   - 使用 `check-jobs.sh` 脚本验证作业状态
+   - 或访问 Flink Web UI 检查作业状态
+   - Flink Web UI: http://localhost:8081
+   - 检查作业是否为 `RUNNING` 状态
+   - 检查是否有异常日志
+
+3. **使用 check-jobs.sh**
+
+```bash
+# 检查所有作业
+./check-jobs.sh
+
+# 检查特定层作业
+./check-jobs.sh "ODS"
+./check-jobs.sh "DWD"
+./check-jobs.sh "DWS"
+./check-jobs.sh "ADS"
+./check-jobs.sh "Sink"
+```
+
+**说明：**
+- `check-jobs.sh` 通过 Flink REST API 获取作业真实状态
+- 显示每个作业的 ID、名称和状态
+- 失败时显示异常信息
+- 退出码 0 表示成功，1 表示有作业失败
+
+4. **常见错误**
+   - `Cannot find table`：Fluss Catalog 未创建或表不存在
+   - `ValidationException`：SQL 语法错误或表结构不匹配
+   - `Connection refused`：服务未启动或端口错误
+
+5. **Catalog 创建**
+   - 每个 SQL 文件都会创建 `fluss_catalog`（幂等操作，不会报错）
+   - 使用 `USE CATALOG fluss_catalog` 切换
+   - 如果出现 Catalog 不存在的错误，检查 Fluss 服务是否启动
 
 ## 扩展场景
 

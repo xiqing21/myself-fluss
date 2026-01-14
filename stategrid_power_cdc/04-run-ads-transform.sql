@@ -1,6 +1,10 @@
 -- ADS 层转换作业
 -- Fluss DWS -> Fluss ADS 层
-
+CREATE CATALOG fluss_catalog
+WITH (
+    'type' = 'fluss',
+    'bootstrap.servers' = 'localhost:9123'
+);
 USE CATALOG fluss_catalog;
 USE stategrid_db;
 
