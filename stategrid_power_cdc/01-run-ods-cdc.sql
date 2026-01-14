@@ -24,18 +24,14 @@ CREATE TABLE IF NOT EXISTS pg_power_user (
     update_time TIMESTAMP(3),
     PRIMARY KEY (user_id) NOT ENFORCED
 ) WITH (
-    'connector' = 'postgres-cdc',
-    'hostname' = 'localhost',
-    'port' = '5432',
+    'connector' = 'jdbc',
+    'url' = 'jdbc:postgresql://localhost:5432/stategrid_db',
+    'table-name' = 'public.power_user',
     'username' = 'postgres',
     'password' = 'postgres',
-    'database-name' = 'stategrid_db',
-    'schema-name' = 'public',
-    'table-name' = 'power_user',
-    'slot.name' = 'flink_stategrid_user',
-    'decoding.plugin.name' = 'wal2json',
-    'scan.incremental.snapshot.enabled' = 'true',
-    'scan.incremental.snapshot.chunk.size' = '8096'
+    'driver' = 'org.postgresql.Driver',
+    'scan.fetch-size' = '1000',
+    'scan.interval.millis' = '5000'
 );
 
 INSERT INTO fluss_catalog.stategrid_db.ods_power_user
@@ -54,18 +50,14 @@ CREATE TABLE IF NOT EXISTS pg_power_consumption (
     remark STRING,
     PRIMARY KEY (consumption_id) NOT ENFORCED
 ) WITH (
-    'connector' = 'postgres-cdc',
-    'hostname' = 'localhost',
-    'port' = '5432',
+    'connector' = 'jdbc',
+    'url' = 'jdbc:postgresql://localhost:5432/stategrid_db',
+    'table-name' = 'public.power_consumption',
     'username' = 'postgres',
     'password' = 'postgres',
-    'database-name' = 'stategrid_db',
-    'schema-name' = 'public',
-    'table-name' = 'power_consumption',
-    'slot.name' = 'flink_stategrid_consumption',
-    'decoding.plugin.name' = 'wal2json',
-    'scan.incremental.snapshot.enabled' = 'true',
-    'scan.incremental.snapshot.chunk.size' = '8096'
+    'driver' = 'org.postgresql.Driver',
+    'scan.fetch-size' = '1000',
+    'scan.interval.millis' = '5000'
 );
 
 INSERT INTO fluss_catalog.stategrid_db.ods_power_consumption
