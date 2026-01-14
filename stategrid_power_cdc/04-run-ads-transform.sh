@@ -12,7 +12,7 @@ echo ""
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 # 启动 ADS 层作业
-bash /opt/flink/bin/sql-client.sh -f "$SCRIPT_DIR/run-ads-transform.sql"
+bash /opt/flink/bin/sql-client.sh -f "$SCRIPT_DIR/04-run-ads-transform.sql"
 
 if [ $? -eq 0 ]; then
     echo ""

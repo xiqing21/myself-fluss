@@ -12,7 +12,7 @@ echo ""
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 # 启动 DWD 层作业
-bash /opt/flink/bin/sql-client.sh -f "$SCRIPT_DIR/run-dwd-transform.sql"
+bash /opt/flink/bin/sql-client.sh -f "$SCRIPT_DIR/02-run-dwd-transform.sql"
 
 if [ $? -eq 0 ]; then
     echo ""

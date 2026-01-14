@@ -11,27 +11,27 @@ SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 # 启动各层作业
 echo ""
 echo "[1/5] 启动 ODS 层 CDC 同步..."
-bash /opt/flink/bin/sql-client.sh -f "$SCRIPT_DIR/run-ods-cdc.sql"
+bash /opt/flink/bin/sql-client.sh -f "$SCRIPT_DIR/01-run-ods-cdc.sql"
 sleep 3
 
 echo ""
 echo "[2/5] 启动 DWD 层转换..."
-bash /opt/flink/bin/sql-client.sh -f "$SCRIPT_DIR/run-dwd-transform.sql"
+bash /opt/flink/bin/sql-client.sh -f "$SCRIPT_DIR/02-run-dwd-transform.sql"
 sleep 3
 
 echo ""
 echo "[3/5] 启动 DWS 层聚合..."
-bash /opt/flink/bin/sql-client.sh -f "$SCRIPT_DIR/run-dws-aggregate.sql"
+bash /opt/flink/bin/sql-client.sh -f "$SCRIPT_DIR/03-run-dws-aggregate.sql"
 sleep 3
 
 echo ""
 echo "[4/5] 启动 ADS 层转换..."
-bash /opt/flink/bin/sql-client.sh -f "$SCRIPT_DIR/run-ads-transform.sql"
+bash /opt/flink/bin/sql-client.sh -f "$SCRIPT_DIR/04-run-ads-transform.sql"
 sleep 3
 
 echo ""
 echo "[5/5] 启动 Sink 层 (Fluss -> PostgreSQL)..."
-bash /opt/flink/bin/sql-client.sh -f "$SCRIPT_DIR/run-fluss-to-postgres.sql"
+bash /opt/flink/bin/sql-client.sh -f "$SCRIPT_DIR/05-run-fluss-to-postgres.sql"
 sleep 3
 
 echo ""

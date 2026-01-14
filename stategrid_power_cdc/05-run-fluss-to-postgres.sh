@@ -12,7 +12,7 @@ echo ""
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 # 启动 Sink 层作业
-bash /opt/flink/bin/sql-client.sh -f "$SCRIPT_DIR/run-fluss-to-postgres.sql"
+bash /opt/flink/bin/sql-client.sh -f "$SCRIPT_DIR/05-run-fluss-to-postgres.sql"
 
 if [ $? -eq 0 ]; then
     echo ""

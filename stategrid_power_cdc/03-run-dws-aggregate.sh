@@ -12,7 +12,7 @@ echo ""
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 # 启动 DWS 层作业
-bash /opt/flink/bin/sql-client.sh -f "$SCRIPT_DIR/run-dws-aggregate.sql"
+bash /opt/flink/bin/sql-client.sh -f "$SCRIPT_DIR/03-run-dws-aggregate.sql"
 
 if [ $? -eq 0 ]; then
     echo ""
