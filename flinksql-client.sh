@@ -1,0 +1,1 @@
+bash /opt/flink/bin/sql-client.sh
