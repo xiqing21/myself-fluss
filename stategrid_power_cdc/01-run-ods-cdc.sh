@@ -24,7 +24,7 @@ echo "验证作业状态..."
 echo "=========================================="
 
 # 使用 check-jobs.sh 验证作业状态
-bash "$SCRIPT_DIR/check-jobs.sh" "ODS"
+bash "$SCRIPT_DIR/check-jobs.sh" "StateGrid DataGen: ODS"
 
 if [ $? -eq 0 ]; then
     echo ""

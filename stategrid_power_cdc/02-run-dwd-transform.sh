@@ -24,7 +24,7 @@ echo "验证作业状态..."
 echo "=========================================="
 
 # 使用 check-jobs.sh 验证作业状态
-bash "$SCRIPT_DIR/check-jobs.sh" "DWD"
+bash "$SCRIPT_DIR/check-jobs.sh" "StateGrid CDC: DWD"
 
 if [ $? -eq 0 ]; then
     echo ""

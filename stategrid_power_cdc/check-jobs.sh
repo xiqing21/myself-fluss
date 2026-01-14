@@ -1,6 +1,6 @@
 #!/bin/bash
 # 验证 Flink 作业是否成功运行
-# 通过 REST API 检查作业状态
+# 通过 REST API 检查作业状态，如果作业失败则删除
 
 FLINK_REST_API="http://localhost:8081"
 MAX_RETRIES=30
@@ -32,16 +32,22 @@ get_jobs_status() {
         sed 's/"id":"//;s/","name":"/|/;s/","state":"/|/;s/"$//'
 }
 
-# 获取作业详情
-get_job_details() {
-    local job_id=$1
-    curl -s "$FLINK_REST_API/jobs/$job_id"
-}
-
 # 获取作业异常信息
 get_job_exceptions() {
     local job_id=$1
     curl -s "$FLINK_REST_API/jobs/$job_id/exceptions"
+}
+
+# 删除作业
+delete_job() {
+    local job_id=$1
+    echo -e "${YELLOW}正在删除失败作业: $job_id${NC}"
+    curl -s -X PATCH "$FLINK_REST_API/jobs/$job_id" -H 'Content-Type: application/json' -d '{"cancellationReason":"Automatically cancelled due to failure"}' > /dev/null 2>&1
+    if [ $? -eq 0 ]; then
+        echo -e "${GREEN}✓${NC} 作业已删除"
+    else
+        echo -e "${RED}✗${NC} 作业删除失败"
+    fi
 }
 
 # 主函数
@@ -71,7 +77,7 @@ main() {
 
     if [ "$JOB_COUNT" -eq 0 ]; then
         echo -e "${YELLOW}!${NC} 没有找到运行的作业"
-        exit 0
+        exit 1
     fi
 
     echo "找到 $JOB_COUNT 个作业"
@@ -81,6 +87,7 @@ main() {
     FAILED_JOBS=0
     RUNNING_JOBS=0
     OTHER_JOBS=0
+    MATCHED_JOBS=0
 
     echo "=========================================="
     echo "作业状态详情"
@@ -88,6 +95,7 @@ main() {
 
     while IFS='|' read -r job_id job_name job_status; do
         if [[ "$job_name" =~ $JOB_NAME_PATTERN ]]; then
+            ((MATCHED_JOBS++))
             echo ""
             echo "作业: $job_name"
             echo "ID: $job_id"
@@ -113,6 +121,9 @@ main() {
                         echo "异常信息:"
                         echo "$EXCEPTIONS" | grep -o '"exception":"[^"]*"' | sed 's/"exception":"//;s/"$//' | sed 's/^/  /'
                     fi
+
+                    # 删除失败作业
+                    delete_job "$job_id"
                     ;;
                 *)
                     echo -e "${YELLOW}!${NC} 作业状态: $job_status"
@@ -126,19 +137,30 @@ main() {
     echo "=========================================="
     echo "统计摘要"
     echo "=========================================="
+    echo "匹配作业数: $MATCHED_JOBS"
     echo -e "运行中/成功: ${GREEN}$RUNNING_JOBS${NC}"
     echo -e "失败/取消: ${RED}$FAILED_JOBS${NC}"
     echo -e "其他状态: ${YELLOW}$OTHER_JOBS${NC}"
     echo ""
 
-    if [ $FAILED_JOBS -gt 0 ]; then
+    if [ $MATCHED_JOBS -eq 0 ]; then
         echo -e "${RED}=========================================="
-        echo "有作业失败！请检查 Flink Web UI"
+        echo "未找到匹配的作业！作业名称: $JOB_NAME_PATTERN"
+        echo "==========================================${NC}"
+        exit 1
+    elif [ $FAILED_JOBS -gt 0 ]; then
+        echo -e "${RED}=========================================="
+        echo "有作业失败！已自动删除失败作业"
+        echo "==========================================${NC}"
+        exit 1
+    elif [ $RUNNING_JOBS -eq 0 ]; then
+        echo -e "${RED}=========================================="
+        echo "没有作业正在运行！"
         echo "==========================================${NC}"
         exit 1
     else
         echo -e "${GREEN}=========================================="
-        echo "所有作业运行正常"
+        echo "作业运行正常"
         echo "==========================================${NC}"
         exit 0
     fi
@@ -150,8 +172,10 @@ if [ "$1" == "-h" ] || [ "$1" == "--help" ]; then
     echo ""
     echo "示例:"
     echo "  $0                          # 检查所有作业"
-    echo "  $0 'ODS'                    # 检查包含 ODS 的作业"
-    echo "  $0 'DWD'                    # 检查包含 DWD 的作业"
+    echo "  $0 'StateGrid DataGen: ODS'      # 检查 ODS 层作业"
+    echo "  $0 'StateGrid CDC: DWD'         # 检查 DWD 层作业"
+    echo "  $0 'StateGrid CDC: DWS'         # 检查 DWS 层作业"
+    echo "  $0 'StateGrid CDC: ADS'         # 检查 ADS 层作业"
     exit 0
 fi
 

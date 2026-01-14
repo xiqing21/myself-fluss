@@ -24,7 +24,7 @@ echo "验证作业状态..."
 echo "=========================================="
 
 # 使用 check-jobs.sh 验证作业状态
-bash "$SCRIPT_DIR/check-jobs.sh" "Sink"
+bash "$SCRIPT_DIR/check-jobs.sh" "INSERT"
 
 if [ $? -eq 0 ]; then
     echo ""
