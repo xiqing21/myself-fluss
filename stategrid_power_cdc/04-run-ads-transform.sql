@@ -48,18 +48,18 @@ LEFT JOIN (
     FROM (
         SELECT
             region_id,
-            CAST(TUMBLE_START(consumption_date, INTERVAL '1' DAY) AS DATE) AS stat_date,
+            CAST(TUMBLE_START(consumption_date, INTERVAL '10' SECOND) AS DATE) AS stat_date,
             EXTRACT(HOUR FROM consumption_date) AS peak_hour,
             SUM(consumption_amount) AS hourly_consumption,
             ROW_NUMBER() OVER (
-                PARTITION BY region_id, CAST(TUMBLE_START(consumption_date, INTERVAL '1' DAY) AS DATE)
+                PARTITION BY region_id, CAST(TUMBLE_START(consumption_date, INTERVAL '10' SECOND) AS DATE)
                 ORDER BY SUM(consumption_amount) ASC
             ) AS row_num_asc
         FROM dwd_power_consumption_detail
         GROUP BY
             region_id,
             consumption_date,
-            TUMBLE(consumption_date, INTERVAL '1' DAY')
+            TUMBLE(consumption_date, INTERVAL '10' SECOND)
     ) t1
     LEFT JOIN (
         SELECT
@@ -70,12 +70,12 @@ LEFT JOIN (
             SELECT
                 region_id,
                 consumption_date,
-                TUMBLE(consumption_date, INTERVAL '1' DAY')
+                TUMBLE(consumption_date, INTERVAL '10' SECOND')
             FROM dwd_power_consumption_detail
             GROUP BY
                 region_id,
                 consumption_date,
-                TUMBLE(consumption_date, INTERVAL '1' DAY')
+                TUMBLE(consumption_date, INTERVAL '10' SECOND')
         ) t
         GROUP BY region_id, stat_date
     ) t2 ON t1.region_id = t2.region_id AND t1.stat_date = t2.stat_date

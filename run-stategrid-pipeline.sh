@@ -20,27 +20,27 @@ echo ""
 SCRIPT_DIR="/opt/data/stategrid_power_cdc"
 
 # 阶段 1: 启动 Fluss 和 Flink
-echo "=========================================="
-echo "[阶段 1/7] 启动 Fluss 和 Flink"
-echo "=========================================="
-echo "防止之前启动过，先停止 Fluss 和 Flink..."
-bash /opt/fluss/bin/local-cluster.sh stop
-bash /opt/flink/bin/stop-cluster.sh
+# echo "=========================================="
+# echo "[阶段 1/7] 启动 Fluss 和 Flink"
+# echo "=========================================="
+# echo "防止之前启动过，先停止 Fluss 和 Flink..."
+# bash /opt/fluss/bin/local-cluster.sh stop
+# bash /opt/flink/bin/stop-cluster.sh
 
-rm -rf /tmp/fluss-*
-rm -rf /tmp/zookeeper
+# rm -rf /tmp/fluss-*
+# rm -rf /tmp/zookeeper
 
-echo "启动 Fluss 和 Flink..."
-bash /opt/fluss/bin/local-cluster.sh start
-bash /opt/flink/bin/start-cluster.sh
+# echo "启动 Fluss 和 Flink..."
+# bash /opt/fluss/bin/local-cluster.sh start
+# bash /opt/flink/bin/start-cluster.sh
 
-if [ $? -eq 0 ]; then
-    echo -e "\033[0;32m✓\033[0m Fluss 和 Flink 启动成功"
-else
-    echo -e "\033[0;31m✗\033[0m Fluss 和 Flink 启动失败"
-    exit 1
-fi
-echo ""
+# if [ $? -eq 0 ]; then
+#     echo -e "\033[0;32m✓\033[0m Fluss 和 Flink 启动成功"
+# else
+#     echo -e "\033[0;31m✗\033[0m Fluss 和 Flink 启动失败"
+#     exit 1
+# fi
+# echo ""
 
 # 阶段 2: 创建 Fluss 分层表
 echo "=========================================="
