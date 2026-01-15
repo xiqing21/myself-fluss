@@ -77,12 +77,12 @@ CREATE TABLE IF NOT EXISTS dwd_power_consumption_detail (
 
 -- ==================== DWS 层（汇总数据层）====================
 
--- DWS：地区日汇总表
+-- DWS：地区汇总表（秒级窗口）
 DROP TABLE IF EXISTS dws_region_daily_stats;
 CREATE TABLE IF NOT EXISTS dws_region_daily_stats (
     region_id INT,
     region_name STRING,
-    stat_date DATE NOT NULL,
+    stat_date TIMESTAMP(3) NOT NULL,
     total_consumption DECIMAL(38, 2),
     total_cost DECIMAL(38, 2),
     user_count BIGINT,
@@ -102,7 +102,7 @@ CREATE TABLE IF NOT EXISTS dws_user_ranking (
     user_name STRING,
     region_id INT,
     region_name STRING,
-    stat_date DATE NOT NULL,
+    stat_date TIMESTAMP(3) NOT NULL,
     total_consumption DECIMAL(38, 2),
     total_cost DECIMAL(38, 2),
     ranking BIGINT,
@@ -118,7 +118,7 @@ CREATE TABLE IF NOT EXISTS dws_user_ranking (
 DROP TABLE IF EXISTS ads_power_dashboard;
 CREATE TABLE IF NOT EXISTS ads_power_dashboard (
     dashboard_id STRING,
-    stat_date DATE NOT NULL,
+    stat_date TIMESTAMP(3) NOT NULL,
     region_id INT,
     region_name STRING,
     total_consumption DECIMAL(38, 2),
@@ -143,7 +143,7 @@ CREATE TABLE IF NOT EXISTS ads_power_dashboard (
 -- ADS Sink：电力仪表盘（写入 PostgreSQL）
 CREATE TEMPORARY TABLE IF NOT EXISTS ads_power_dashboard_sink (
     dashboard_id STRING,
-    stat_date DATE NOT NULL,
+    stat_date TIMESTAMP(3) NOT NULL,
     region_id INT,
     region_name STRING,
     total_consumption DECIMAL(38, 2),

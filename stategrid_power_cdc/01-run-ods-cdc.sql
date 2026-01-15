@@ -43,9 +43,9 @@ CREATE TABLE IF NOT EXISTS power_user_source (
     'fields.phone.kind' = 'random',
     'fields.phone.length' = '11',
     'fields.create_time.kind' = 'random',
-    'fields.create_time.max-past' = '1d',
+    'fields.create_time.max-past' = '3d',
     'fields.update_time.kind' = 'random',
-    'fields.update_time.max-past' = '1d'
+    'fields.update_time.max-past' = '3d'
 );
 
 INSERT INTO fluss_catalog.stategrid_db.ods_power_user
@@ -65,10 +65,10 @@ CREATE TABLE IF NOT EXISTS power_consumption_source (
     PRIMARY KEY (consumption_id) NOT ENFORCED
 ) WITH (
     'connector' = 'datagen',
-    'rows-per-second' = '2',
+    'rows-per-second' = '5',
     'fields.consumption_id.kind' = 'sequence',
     'fields.consumption_id.start' = '1',
-    'fields.consumption_id.end' = '10000',
+    'fields.consumption_id.end' = '100000000',
     'fields.user_id.kind' = 'random',
     'fields.user_id.min' = '1',
     'fields.user_id.max' = '1000',

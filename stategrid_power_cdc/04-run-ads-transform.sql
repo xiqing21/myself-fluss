@@ -42,42 +42,24 @@ LEFT JOIN (
 ) u ON r.region_id = u.region_id AND r.stat_date = u.stat_date
 LEFT JOIN (
     SELECT
-        t1.region_id,
-        t1.stat_date,
-        t1.peak_hour
+        region_id,
+        stat_date,
+        CAST(peak_hour AS INT) AS peak_hour
     FROM (
         SELECT
             region_id,
-            CAST(TUMBLE_START(consumption_date, INTERVAL '10' SECOND) AS DATE) AS stat_date,
+            CAST(TUMBLE_START(consumption_date, INTERVAL '5' SECOND) AS TIMESTAMP(3)) AS stat_date,
             EXTRACT(HOUR FROM consumption_date) AS peak_hour,
             SUM(consumption_amount) AS hourly_consumption,
             ROW_NUMBER() OVER (
-                PARTITION BY region_id, CAST(TUMBLE_START(consumption_date, INTERVAL '10' SECOND) AS DATE)
-                ORDER BY SUM(consumption_amount) ASC
-            ) AS row_num_asc
+                PARTITION BY region_id, CAST(TUMBLE_START(consumption_date, INTERVAL '5' SECOND) AS TIMESTAMP(3))
+                ORDER BY SUM(consumption_amount) DESC
+            ) AS rn
         FROM dwd_power_consumption_detail
         GROUP BY
             region_id,
-            consumption_date,
-            TUMBLE(consumption_date, INTERVAL '10' SECOND)
-    ) t1
-    LEFT JOIN (
-        SELECT
-            region_id,
-            CAST(TUMBLE_START(consumption_date, INTERVAL '1' DAY) AS DATE) AS stat_date,
-            COUNT(*) AS total_count
-        FROM (
-            SELECT
-                region_id,
-                consumption_date,
-                TUMBLE(consumption_date, INTERVAL '10' SECOND')
-            FROM dwd_power_consumption_detail
-            GROUP BY
-                region_id,
-                consumption_date,
-                TUMBLE(consumption_date, INTERVAL '10' SECOND')
-        ) t
-        GROUP BY region_id, stat_date
-    ) t2 ON t1.region_id = t2.region_id AND t1.stat_date = t2.stat_date
-    WHERE t1.row_num_asc = t2.total_count
+            EXTRACT(HOUR FROM consumption_date),
+            TUMBLE(consumption_date, INTERVAL '5' SECOND)
+    )
+    WHERE rn = 1
 ) p ON r.region_id = p.region_id AND r.stat_date = p.stat_date;

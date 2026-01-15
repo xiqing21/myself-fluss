@@ -20,7 +20,7 @@ INSERT INTO dws_region_daily_stats
 SELECT
     region_id,
     region_name,
-    CAST(TUMBLE_START(consumption_date, INTERVAL '10' SECOND) AS DATE) AS stat_date,
+    CAST(TUMBLE_START(consumption_date, INTERVAL '5' SECOND) AS TIMESTAMP(3)) AS stat_date,
     SUM(consumption_amount) AS total_consumption,
     SUM(consumption_cost) AS total_cost,
     COUNT(DISTINCT user_id) AS user_count,
@@ -31,7 +31,7 @@ FROM dwd_power_consumption_detail
 GROUP BY
     region_id,
     region_name,
-    TUMBLE(consumption_date, INTERVAL '10' SECOND);
+    TUMBLE(consumption_date, INTERVAL '5' SECOND);
 
 -- ==================== DWS: 用户用电排名 ====================
 
@@ -64,7 +64,7 @@ FROM (
             user_name,
             region_id,
             region_name,
-            CAST(TUMBLE_START(consumption_date, INTERVAL '10' SECOND) AS DATE) AS stat_date,
+            CAST(TUMBLE_START(consumption_date, INTERVAL '5' SECOND) AS TIMESTAMP(3)) AS stat_date,
             SUM(consumption_amount) AS total_consumption,
             SUM(consumption_cost) AS total_cost
         FROM dwd_power_consumption_detail
@@ -73,7 +73,7 @@ FROM (
             user_name,
             region_id,
             region_name,
-            TUMBLE(consumption_date, INTERVAL '10' SECOND)
+            TUMBLE(consumption_date, INTERVAL '5' SECOND)
     )
 ) t1
 LEFT JOIN (
@@ -83,14 +83,14 @@ LEFT JOIN (
         COUNT(*) AS total_count
     FROM (
         SELECT
-            CAST(TUMBLE_START(consumption_date, INTERVAL '10' SECOND) AS DATE) AS stat_date,
+            CAST(TUMBLE_START(consumption_date, INTERVAL '5' SECOND) AS TIMESTAMP(3)) AS stat_date,
             region_id,
             user_id
         FROM dwd_power_consumption_detail
         GROUP BY
             user_id,
             region_id,
-            TUMBLE(consumption_date, INTERVAL '10' SECOND)
+            TUMBLE(consumption_date, INTERVAL '5' SECOND)
     )
     GROUP BY stat_date, region_id
 ) t2
